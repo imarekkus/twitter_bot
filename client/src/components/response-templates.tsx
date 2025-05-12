@@ -28,7 +28,7 @@ export default function ResponseTemplates() {
     data: templates,
     isLoading
   } = useQuery<Template[]>({
-    queryKey: ['/api/templates'],
+    queryKey: ['/api/templates']
   });
 
   // Create template mutation
@@ -222,7 +222,7 @@ export default function ResponseTemplates() {
                 className="h-24 font-comic"
               />
               <p className="text-xs text-gray-500">
-                Use {{variable}} syntax for dynamic content. Example: {{user}}, {{bonk_price}}
+                Use double curly braces syntax for dynamic content. Example: {"{{user}}, {{bonk_price}}"}
               </p>
             </div>
             
