@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import ToggleSwitch from "@/components/toggle-switch";
 import { BotSettings, Keyword, Stats } from "@shared/schema";
@@ -44,6 +44,71 @@ export default function BotControlPanel() {
   } = useQuery<Stats>({
     queryKey: ['/api/stats'],
   });
+  
+  // WebSocket connection for real-time updates
+  useEffect(() => {
+    // Create WebSocket connection
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    const socket = new WebSocket(wsUrl);
+    
+    socket.onopen = () => {
+      console.log('Control panel connected to WebSocket');
+    };
+    
+    socket.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        
+        // Handle different message types
+        if (message.type === 'stats_update') {
+          // Update stats using the query client to avoid direct state updates
+          queryClient.setQueryData(['/api/stats'], message.data);
+        } else if (message.type === 'bot_status') {
+          // Update bot status
+          if (message.data.settings) {
+            queryClient.setQueryData(['/api/settings'], message.data.settings);
+          }
+          
+          // Show notification
+          toast({
+            title: message.data.isActive ? "Bot Activated" : "Bot Deactivated",
+            description: message.data.isActive ? 
+              "The Bonk Dog bot is now actively monitoring Twitter" : 
+              "The Bonk Dog bot has been deactivated"
+          });
+        }
+      } catch (error) {
+        console.error('Error handling WebSocket message:', error);
+      }
+    };
+    
+    socket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+    
+    socket.onclose = () => {
+      console.log('Control panel disconnected from WebSocket');
+      
+      // Try to reconnect after 5 seconds
+      setTimeout(() => {
+        if (wsRef.current === null || wsRef.current.readyState === WebSocket.CLOSED) {
+          console.log('Attempting to reconnect...');
+          // Component will re-render and useEffect will run again
+        }
+      }, 5000);
+    };
+    
+    // Store socket reference
+    wsRef.current = socket;
+    
+    // Clean up on unmount
+    return () => {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, [toast]);
 
   // Fetch Twitter API status
   const { 
