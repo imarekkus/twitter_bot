@@ -176,10 +176,18 @@ export class TwitterService {
           if (templates.length > 0) {
             const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
             
-            // Generate a dog language response using the template
-            const response = this.dogLanguageService.generateResponse(randomTemplate.template, {
-              user: username
-            });
+            // Randomly choose between template and random dog responses for more variety
+            let response: string;
+            
+            if (Math.random() > 0.4) {
+              // Use template for 60% of responses
+              response = this.dogLanguageService.generateResponse(randomTemplate.template, {
+                user: username
+              });
+            } else {
+              // 40% chance to use a completely random dog sentence with the username
+              response = `${username} ${this.dogLanguageService.generateRandomDogSentence('bonk')}`;
+            }
             
             console.log(`Responding to ${username} with ${userFollowerCount} followers (minimum: ${minimumFollowers})`);
             
@@ -222,11 +230,23 @@ export class TwitterService {
             const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
             const randomKeyword = keywords[Math.floor(Math.random() * keywords.length)];
             
-            // Generate a dog language response using the template
-            const response = this.dogLanguageService.generateResponse(randomTemplate.template, {
-              user: username,
-              bonk_price: '$0.000023'
-            });
+            // Randomly choose between different response types for more variety
+            let response: string;
+            const randomOption = Math.random();
+            
+            if (randomOption > 0.7) {
+              // 30% chance to use template response
+              response = this.dogLanguageService.generateResponse(randomTemplate.template, {
+                user: username,
+                bonk_price: '$0.000023'
+              });
+            } else if (randomOption > 0.4) {
+              // 30% chance to use a random dog sentence with keyword mention
+              response = `${username} did someone say ${randomKeyword.keyword}? ${this.dogLanguageService.generateRandomDogSentence('bonk')}`;
+            } else {
+              // 40% chance to use a specialized crypto tweet
+              response = `${username} ${this.dogLanguageService.generateBonkTweet()}`;
+            }
             
             console.log(`Responding to ${username} with ${userFollowerCount} followers for keyword mention (minimum: ${minimumFollowers})`);
             
@@ -305,15 +325,23 @@ export class TwitterService {
         return null;
       }
       
-      // Select a random template
-      const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
+      // Randomly decide between using a template or generating a completely random tweet
+      let content: string;
       
-      // Generate a dog language tweet using the template
-      const content = this.dogLanguageService.generateResponse(randomTemplate.template, {
-        bonk_price: '$0.000023',
-        trend_direction: 'up 5%',
-        trend_sentiment: 'excite'
-      });
+      if (Math.random() > 0.5) {
+        // Generate a completely random bonk tweet for greater variability
+        content = this.dogLanguageService.generateBonkTweet();
+      } else {
+        // Select a random template
+        const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
+        
+        // Generate a dog language tweet using the template
+        content = this.dogLanguageService.generateResponse(randomTemplate.template, {
+          bonk_price: '$0.000023',
+          trend_direction: 'up 5%',
+          trend_sentiment: 'excite'
+        });
+      }
       
       // Create a tweet record
       const tweetData: InsertTweet = {

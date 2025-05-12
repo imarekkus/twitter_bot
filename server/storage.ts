@@ -263,9 +263,13 @@ export class MemStorage implements IStorage {
   async createTweet(insertTweet: InsertTweet): Promise<Tweet> {
     const id = this.tweetsCurrentId++;
     const tweet: Tweet = { 
-      ...insertTweet, 
-      id, 
-      sentAt: insertTweet.sentAt || new Date()
+      id,
+      content: insertTweet.content,
+      twitterId: insertTweet.twitterId,
+      type: insertTweet.type,
+      sentAt: new Date(),
+      replyToId: insertTweet.replyToId || null,
+      replyToUsername: insertTweet.replyToUsername || null
     };
     this.tweetsMap.set(id, tweet);
     
