@@ -84,7 +84,9 @@ export class MemStorage implements IStorage {
       monitorKeywords: true,
       scheduledTweets: true,
       tweetFrequency: "3h",
-      responseDelay: 30
+      responseDelay: 30,
+      minimumFollowers: 100,
+      checkFrequency: "60s"
     };
     this.updateBotSettings(defaultSettings);
 
@@ -160,7 +162,9 @@ export class MemStorage implements IStorage {
       monitorKeywords: settings.monitorKeywords ?? existingSettings?.monitorKeywords ?? true,
       scheduledTweets: settings.scheduledTweets ?? existingSettings?.scheduledTweets ?? true,
       tweetFrequency: settings.tweetFrequency ?? existingSettings?.tweetFrequency ?? "6h",
-      responseDelay: settings.responseDelay ?? existingSettings?.responseDelay ?? 30
+      responseDelay: settings.responseDelay ?? existingSettings?.responseDelay ?? 30,
+      minimumFollowers: settings.minimumFollowers ?? existingSettings?.minimumFollowers ?? 100,
+      checkFrequency: settings.checkFrequency ?? existingSettings?.checkFrequency ?? "60s"
     };
     
     this.botSettingsMap.set(1, updatedSettings);

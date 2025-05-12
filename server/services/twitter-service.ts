@@ -72,14 +72,38 @@ export class TwitterService {
       settings
     });
     
+    // Convert check frequency to milliseconds
+    const checkIntervalMs = this.getCheckIntervalMs(settings.checkFrequency);
+    
     // In a real implementation, this would set up Twitter API streaming or polling
     // Since we don't have actual Twitter API access, we'll simulate periodic checks
-    this.monitoringInterval = setInterval(() => this.checkTwitter(settings), 60000);
+    this.monitoringInterval = setInterval(() => this.checkTwitter(settings), checkIntervalMs);
     
     // Initial check immediately
     this.checkTwitter(settings);
     
     return { success: true };
+  }
+  
+  // Convert check frequency string to milliseconds
+  private getCheckIntervalMs(frequency: string): number {
+    // Default to 60 seconds if invalid format
+    const defaultMs = 60 * 1000;
+    
+    try {
+      const value = parseInt(frequency);
+      if (isNaN(value) || value <= 0) return defaultMs;
+      
+      if (frequency.endsWith('s')) return value * 1000;
+      if (frequency.endsWith('m')) return value * 60 * 1000;
+      if (frequency.endsWith('h')) return value * 60 * 60 * 1000;
+      
+      // If no unit specified, assume seconds
+      return value * 1000;
+    } catch (error) {
+      console.error("Invalid check frequency format:", frequency);
+      return defaultMs;
+    }
   }
 
   // Stop monitoring

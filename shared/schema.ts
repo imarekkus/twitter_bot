@@ -22,6 +22,8 @@ export const botSettings = pgTable("bot_settings", {
   scheduledTweets: boolean("scheduled_tweets").notNull().default(true),
   tweetFrequency: text("tweet_frequency").notNull().default("6h"),
   responseDelay: integer("response_delay").notNull().default(30),
+  minimumFollowers: integer("minimum_followers").notNull().default(0),
+  checkFrequency: text("check_frequency").notNull().default("60s"),
 });
 
 export const insertBotSettingsSchema = createInsertSchema(botSettings).omit({
