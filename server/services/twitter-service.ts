@@ -66,9 +66,18 @@ export class TwitterService {
     
     this.isMonitoring = true;
     
+    // Broadcast bot status update to all connected clients
+    this.broadcastUpdate('bot_status', {
+      isActive: true,
+      settings
+    });
+    
     // In a real implementation, this would set up Twitter API streaming or polling
     // Since we don't have actual Twitter API access, we'll simulate periodic checks
     this.monitoringInterval = setInterval(() => this.checkTwitter(settings), 60000);
+    
+    // Initial check immediately
+    this.checkTwitter(settings);
     
     return { success: true };
   }
@@ -85,6 +94,11 @@ export class TwitterService {
       clearInterval(this.monitoringInterval);
       this.monitoringInterval = null;
     }
+    
+    // Broadcast bot status update to all connected clients
+    this.broadcastUpdate('bot_status', {
+      isActive: false
+    });
     
     return { success: true };
   }
@@ -103,6 +117,11 @@ export class TwitterService {
       if (settings.monitorKeywords) {
         await this.checkKeywords();
       }
+      
+      // Get updated stats and broadcast to all clients
+      const stats = await this.storage.getStats();
+      this.broadcastUpdate('stats_update', stats);
+      
     } catch (error) {
       console.error("Error checking Twitter:", error);
     }

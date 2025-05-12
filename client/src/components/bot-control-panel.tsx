@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -16,6 +16,7 @@ import { TwitterStatus } from "@/types/twitter";
 export default function BotControlPanel() {
   const { toast } = useToast();
   const [keywordInput, setKeywordInput] = useState("");
+  const wsRef = useRef<WebSocket | null>(null);
 
   // Fetch bot settings
   const { 
