@@ -1,0 +1,31 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="100" cy="100" r="97" fill="#FFD700" stroke="#FF6B6B" stroke-width="6"/>
+  
+  <!-- Dog Face -->
+  <ellipse cx="100" cy="108" rx="65" ry="60" fill="#F9D949"/>
+  
+  <!-- Ears -->
+  <path d="M50 55C40 40 25 35 15 40C5 45 10 70 25 80C40 90 50 70 50 55Z" fill="#F9D949" stroke="#333" stroke-width="2"/>
+  <path d="M150 55C160 40 175 35 185 40C195 45 190 70 175 80C160 90 150 70 150 55Z" fill="#F9D949" stroke="#333" stroke-width="2"/>
+  
+  <!-- Eyes -->
+  <circle cx="75" cy="95" r="12" fill="white" stroke="#333" stroke-width="2"/>
+  <circle cx="125" cy="95" r="12" fill="white" stroke="#333" stroke-width="2"/>
+  <circle cx="75" cy="95" r="6" fill="#333"/>
+  <circle cx="125" cy="95" r="6" fill="#333"/>
+  
+  <!-- Nose -->
+  <ellipse cx="100" cy="115" rx="12" ry="8" fill="#333"/>
+  
+  <!-- Mouth -->
+  <path d="M100 125C100 125 85 140 70 140M100 125C100 125 115 140 130 140" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Tongue -->
+  <path d="M95 130C95 130 95 145 100 145C105 145 105 130 105 130" fill="#FF6B6B" stroke="#333"/>
+  
+  <!-- Text -->
+  <path d="M70 165C70 165 75 170 85 170C95 170 95 165 95 165M105 165C105 165 105 170 115 170C125 170 130 165 130 165" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Bonk -->
+  <text x="100" y="50" font-family="Arial" font-size="24" font-weight="bold" text-anchor="middle" fill="#333">BONK</text>
+</svg>
