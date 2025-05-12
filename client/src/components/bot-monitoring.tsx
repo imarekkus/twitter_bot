@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useMutation } from "@tanstack/react-query";
 import { Bell, Reply, Heart, MessageSquare, RefreshCw } from "lucide-react";
@@ -13,6 +13,8 @@ import bonkDogLogo from "@/assets/bonk-dog-logo.svg";
 export default function BotMonitoring() {
   const { toast } = useToast();
   const [filter, setFilter] = useState<string>("all");
+  const [localTweets, setLocalTweets] = useState<Tweet[]>([]);
+  const wsRef = useRef<WebSocket | null>(null);
   
   // Fetch tweets
   const {
@@ -22,6 +24,75 @@ export default function BotMonitoring() {
   } = useQuery<Tweet[]>({
     queryKey: ['/api/tweets'],
   });
+  
+  // Update local tweets when data is fetched
+  useEffect(() => {
+    if (tweets) {
+      setLocalTweets(tweets);
+    }
+  }, [tweets]);
+  
+  // Connect to WebSocket for real-time tweet updates
+  useEffect(() => {
+    // Create WebSocket connection
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
+    const socket = new WebSocket(wsUrl);
+    
+    socket.onopen = () => {
+      console.log('Connected to WebSocket server');
+    };
+    
+    socket.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data);
+        
+        // Handle different message types
+        if (message.type === 'new_tweet') {
+          // Add new tweet to local state
+          setLocalTweets(prev => {
+            // Check if tweet already exists to avoid duplicates
+            const exists = prev.some(t => t.id === message.data.id);
+            if (!exists) {
+              return [message.data, ...prev];
+            }
+            return prev;
+          });
+          
+          // Show notification
+          toast({
+            title: "New Bot Tweet",
+            description: "The bot just sent a new tweet automatically!"
+          });
+        } else if (message.type === 'init') {
+          // Initialize with data from server
+          if (message.data.tweets) {
+            setLocalTweets(message.data.tweets);
+          }
+        }
+      } catch (error) {
+        console.error('Error handling WebSocket message:', error);
+      }
+    };
+    
+    socket.onerror = (error) => {
+      console.error('WebSocket error:', error);
+    };
+    
+    socket.onclose = () => {
+      console.log('Disconnected from WebSocket server');
+    };
+    
+    // Store socket reference
+    wsRef.current = socket;
+    
+    // Clean up on unmount
+    return () => {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.close();
+      }
+    };
+  }, [toast]);
 
   // Send reply mutation
   const sendReply = useMutation({
@@ -46,7 +117,7 @@ export default function BotMonitoring() {
   });
 
   // Filter tweets based on selected filter
-  const filteredTweets = tweets?.filter(tweet => {
+  const filteredTweets = localTweets.filter(tweet => {
     if (filter === "all") return true;
     if (filter === "mentions") return tweet.type === "mention_reply";
     if (filter === "bonk") return tweet.type === "keyword_reply";
@@ -189,10 +260,18 @@ export default function BotMonitoring() {
           {filteredTweets && filteredTweets.length > 0 && (
             <div className="text-center mt-6">
               <Button 
-                onClick={() => refetch()} 
+                onClick={() => {
+                  // Send refresh request over websocket if connected
+                  if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+                    wsRef.current.send(JSON.stringify({ type: 'refresh' }));
+                  }
+                  // Also do regular refetch
+                  refetch();
+                }} 
                 className="bg-twitterLightGray hover:bg-gray-200 text-twitterDarkGray"
               >
-                Load More
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Refresh Tweets
               </Button>
             </div>
           )}
