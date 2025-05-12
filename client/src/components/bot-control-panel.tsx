@@ -219,6 +219,14 @@ export default function BotControlPanel() {
   const handleDelayChange = (value: number[]) => {
     updateSettings.mutate({ responseDelay: value[0] });
   };
+  
+  const handleMinimumFollowersChange = (value: number[]) => {
+    updateSettings.mutate({ minimumFollowers: value[0] });
+  };
+  
+  const handleCheckFrequencyChange = (value: string) => {
+    updateSettings.mutate({ checkFrequency: value });
+  };
 
   const handleAddKeyword = () => {
     if (keywordInput.trim()) {
@@ -284,8 +292,14 @@ export default function BotControlPanel() {
                   <SelectValue placeholder="Select frequency" />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="15m">Every 15 minutes</SelectItem>
+                  <SelectItem value="30m">Every 30 minutes</SelectItem>
+                  <SelectItem value="1h">Every hour</SelectItem>
+                  <SelectItem value="2h">Every 2 hours</SelectItem>
                   <SelectItem value="3h">Every 3 hours</SelectItem>
+                  <SelectItem value="4h">Every 4 hours</SelectItem>
                   <SelectItem value="6h">Every 6 hours</SelectItem>
+                  <SelectItem value="8h">Every 8 hours</SelectItem>
                   <SelectItem value="12h">Every 12 hours</SelectItem>
                   <SelectItem value="24h">Once daily</SelectItem>
                 </SelectContent>
@@ -306,6 +320,49 @@ export default function BotControlPanel() {
                 <span>{settings?.responseDelay ?? 30}s</span>
                 <span>5m</span>
               </div>
+            </div>
+            
+            <div className="pt-2">
+              <label className="block font-medium mb-2">
+                Minimum Follower Count 
+                <span className="text-xs text-gray-500 ml-2">(Only respond to accounts with at least this many followers)</span>
+              </label>
+              <Slider 
+                defaultValue={[settings?.minimumFollowers ?? 100]} 
+                max={5000} 
+                step={100}
+                onValueChange={(value) => handleMinimumFollowersChange(value)}
+                disabled={updateSettings.isPending}
+              />
+              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                <span>0</span>
+                <span>{settings?.minimumFollowers ?? 100} followers</span>
+                <span>5K+</span>
+              </div>
+            </div>
+            
+            <div className="pt-2">
+              <label className="block font-medium mb-2">
+                Check Frequency 
+                <span className="text-xs text-gray-500 ml-2">(How often to check for new tweets)</span>
+              </label>
+              <Select 
+                value={settings?.checkFrequency ?? "60s"} 
+                onValueChange={(value) => handleCheckFrequencyChange(value)}
+                disabled={updateSettings.isPending}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select frequency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="15s">Every 15 seconds</SelectItem>
+                  <SelectItem value="30s">Every 30 seconds</SelectItem>
+                  <SelectItem value="60s">Every minute</SelectItem>
+                  <SelectItem value="2m">Every 2 minutes</SelectItem>
+                  <SelectItem value="5m">Every 5 minutes</SelectItem>
+                  <SelectItem value="10m">Every 10 minutes</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardContent>

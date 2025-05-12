@@ -52,12 +52,22 @@ export class SchedulerService {
   // Convert frequency string to cron expression
   private frequencyToCron(frequency: string): string {
     switch (frequency) {
+      case "15m":
+        return "*/15 * * * *"; // Every 15 minutes
+      case "30m":
+        return "*/30 * * * *"; // Every 30 minutes
       case "1h":
         return "0 * * * *"; // Every hour at minute 0
+      case "2h":
+        return "0 */2 * * *"; // Every 2 hours
       case "3h":
         return "0 */3 * * *"; // Every 3 hours
+      case "4h":
+        return "0 */4 * * *"; // Every 4 hours
       case "6h":
         return "0 */6 * * *"; // Every 6 hours
+      case "8h":
+        return "0 */8 * * *"; // Every 8 hours
       case "12h":
         return "0 */12 * * *"; // Every 12 hours
       case "24h":

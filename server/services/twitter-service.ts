@@ -159,20 +159,35 @@ export class TwitterService {
       // Since we don't have actual Twitter API access, we'll just increment the mention counter
       await this.storage.incrementStats('mentions');
       
+      // Get bot settings to check minimum follower count
+      const settings = await this.storage.getBotSettings();
+      const minimumFollowers = settings?.minimumFollowers || 0;
+      
       // Simulate finding and responding to a mention occasionally
       if (Math.random() > 0.7) {
-        // Get mention template
-        const templates = await this.storage.getTemplatesByType('mention');
-        if (templates.length > 0) {
-          const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
-          
-          // Generate a dog language response using the template
-          const response = this.dogLanguageService.generateResponse(randomTemplate.template, {
-            user: '@randomUser'
-          });
-          
-          // Simulate sending a reply
-          await this.simulateReply(response, '12345', '@randomUser', 'mention_reply');
+        // Generate a random user and follower count for the simulated user
+        const username = '@user' + Math.floor(Math.random() * 1000);
+        const userFollowerCount = Math.floor(Math.random() * 5000);
+        
+        // Check if user has enough followers
+        if (userFollowerCount >= minimumFollowers) {
+          // Get mention template
+          const templates = await this.storage.getTemplatesByType('mention');
+          if (templates.length > 0) {
+            const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
+            
+            // Generate a dog language response using the template
+            const response = this.dogLanguageService.generateResponse(randomTemplate.template, {
+              user: username
+            });
+            
+            console.log(`Responding to ${username} with ${userFollowerCount} followers (minimum: ${minimumFollowers})`);
+            
+            // Simulate sending a reply
+            await this.simulateReply(response, '12345', username, 'mention_reply');
+          }
+        } else {
+          console.log(`Ignoring ${username} with only ${userFollowerCount} followers (minimum: ${minimumFollowers})`);
         }
       }
     } catch (error) {
@@ -189,22 +204,37 @@ export class TwitterService {
       // Since we don't have actual Twitter API access, we'll just increment the counter
       await this.storage.incrementStats('keywordsDetected');
       
+      // Get bot settings to check minimum follower count
+      const settings = await this.storage.getBotSettings();
+      const minimumFollowers = settings?.minimumFollowers || 0;
+      
       // Simulate finding and responding to a keyword mention occasionally
       if (Math.random() > 0.7) {
-        // Get keyword template
-        const templates = await this.storage.getTemplatesByType('keyword');
-        if (templates.length > 0 && keywords.length > 0) {
-          const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
-          const randomKeyword = keywords[Math.floor(Math.random() * keywords.length)];
-          
-          // Generate a dog language response using the template
-          const response = this.dogLanguageService.generateResponse(randomTemplate.template, {
-            user: '@randomUser',
-            bonk_price: '$0.000023'
-          });
-          
-          // Simulate sending a reply
-          await this.simulateReply(response, '67890', '@anotherUser', 'keyword_reply');
+        // Generate a random user and follower count for the simulated user
+        const username = '@user' + Math.floor(Math.random() * 1000);
+        const userFollowerCount = Math.floor(Math.random() * 5000);
+        
+        // Check if user has enough followers
+        if (userFollowerCount >= minimumFollowers) {
+          // Get keyword template
+          const templates = await this.storage.getTemplatesByType('keyword');
+          if (templates.length > 0 && keywords.length > 0) {
+            const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
+            const randomKeyword = keywords[Math.floor(Math.random() * keywords.length)];
+            
+            // Generate a dog language response using the template
+            const response = this.dogLanguageService.generateResponse(randomTemplate.template, {
+              user: username,
+              bonk_price: '$0.000023'
+            });
+            
+            console.log(`Responding to ${username} with ${userFollowerCount} followers for keyword mention (minimum: ${minimumFollowers})`);
+            
+            // Simulate sending a reply
+            await this.simulateReply(response, '67890', username, 'keyword_reply');
+          }
+        } else {
+          console.log(`Ignoring ${username} with only ${userFollowerCount} followers for keyword mention (minimum: ${minimumFollowers})`);
         }
       }
     } catch (error) {
