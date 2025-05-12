@@ -1,16 +1,43 @@
 import { IStorage } from "../storage";
 import { BotSettings, InsertTweet, Tweet } from "@shared/schema";
 import { DogLanguageService } from "./dog-language-service";
+import { WebSocketServer } from 'ws';
+import { WebSocket } from 'ws';
 
 export class TwitterService {
   private storage: IStorage;
   private dogLanguageService: DogLanguageService;
   private isMonitoring: boolean = false;
   private monitoringInterval: NodeJS.Timeout | null = null;
+  private wss: WebSocketServer | null = null;
   
   constructor(storage: IStorage) {
     this.storage = storage;
     this.dogLanguageService = new DogLanguageService();
+  }
+  
+  // Set WebSocket server for real-time updates
+  setWebSocketServer(wss: WebSocketServer) {
+    this.wss = wss;
+  }
+  
+  // Broadcast updates to all connected clients
+  private broadcastUpdate(type: string, data: any) {
+    if (!this.wss) return;
+    
+    // Format message
+    const message = JSON.stringify({
+      type,
+      data,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Send to all connected clients
+    this.wss.clients.forEach(client => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
   }
 
   // Check if Twitter API is working
@@ -161,7 +188,12 @@ export class TwitterService {
     };
     
     // Save tweet to storage
-    return this.storage.createTweet(tweetData);
+    const tweet = await this.storage.createTweet(tweetData);
+    
+    // Broadcast tweet to clients
+    this.broadcastUpdate('new_tweet', tweet);
+    
+    return tweet;
   }
 
   // Send a tweet (used for manually composed tweets and scheduled tweets)
@@ -179,7 +211,12 @@ export class TwitterService {
       };
       
       // Save tweet to storage
-      return this.storage.createTweet(tweetData);
+      const tweet = await this.storage.createTweet(tweetData);
+      
+      // Broadcast tweet to clients
+      this.broadcastUpdate('new_tweet', tweet);
+      
+      return tweet;
     } catch (error) {
       console.error("Error sending tweet:", error);
       throw new Error("Failed to send tweet");
@@ -212,8 +249,13 @@ export class TwitterService {
         type: 'scheduled'
       };
       
-      // Save tweet to storage
-      return this.storage.createTweet(tweetData);
+      // Save tweet to storage and broadcast
+      const tweet = await this.storage.createTweet(tweetData);
+      
+      // Broadcast tweet to clients
+      this.broadcastUpdate('new_tweet', tweet);
+      
+      return tweet;
     } catch (error) {
       console.error("Error sending scheduled tweet:", error);
       return null;

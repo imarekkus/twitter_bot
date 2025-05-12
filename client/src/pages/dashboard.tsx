@@ -134,9 +134,9 @@ export default function Dashboard() {
         
         {/* Right Column - Bot Content & Monitoring */}
         <div className="lg:w-2/3 space-y-6">
-          <TweetComposer />
           <BotMonitoring />
           <ResponseTemplates />
+          <TweetComposer />
         </div>
       </main>
 

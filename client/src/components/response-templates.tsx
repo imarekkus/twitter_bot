@@ -26,9 +26,11 @@ export default function ResponseTemplates() {
   // Fetch templates
   const {
     data: templates,
-    isLoading
+    isLoading,
+    error
   } = useQuery<Template[]>({
-    queryKey: ['/api/templates']
+    queryKey: ['/api/templates'],
+    retry: 3
   });
 
   // Create template mutation
@@ -222,7 +224,7 @@ export default function ResponseTemplates() {
                 className="h-24 font-comic"
               />
               <p className="text-xs text-gray-500">
-                Use double curly braces syntax for dynamic content. Example: {"{{user}}, {{bonk_price}}"}
+                Use double curly braces for variables like: &#123;&#123;user&#125;&#125;, &#123;&#123;bonk_price&#125;&#125;
               </p>
             </div>
             

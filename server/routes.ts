@@ -10,6 +10,8 @@ import {
 } from "@shared/schema";
 import { TwitterService } from "./services/twitter-service";
 import { SchedulerService } from "./services/scheduler-service";
+import { WebSocketServer } from 'ws';
+import { WebSocket } from 'ws';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Create Twitter and scheduler services
@@ -296,6 +298,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Create HTTP server
   const httpServer = createServer(app);
+
+  // Create WebSocket server
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+
+  // Set up WebSocket handlers
+  wss.on('connection', (ws) => {
+    console.log('Client connected to WebSocket');
+    
+    // Send initial data on connection
+    const sendInitialData = async () => {
+      try {
+        const stats = await storage.getStats();
+        const settings = await storage.getBotSettings();
+        const tweets = await storage.getAllTweets(10);
+        
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({
+            type: 'init',
+            data: { stats, settings, tweets }
+          }));
+        }
+      } catch (error) {
+        console.error('Error sending initial data:', error);
+      }
+    };
+    
+    sendInitialData();
+    
+    // Listen for messages from client
+    ws.on('message', async (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        console.log('Received message:', data);
+        
+        // Handle different message types
+        if (data.type === 'refresh') {
+          sendInitialData();
+        }
+      } catch (error) {
+        console.error('Error handling WebSocket message:', error);
+      }
+    });
+    
+    // Handle disconnect
+    ws.on('close', () => {
+      console.log('Client disconnected from WebSocket');
+    });
+  });
+  
+  // Broadcast updates to all connected clients
+  twitterService.setWebSocketServer(wss);
 
   return httpServer;
 }
